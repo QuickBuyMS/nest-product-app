@@ -61,7 +61,7 @@ export class ProductsService {
       limit,
       offset,
     );
-    if (!products) throw new NotFoundException('Product not found');
+    // if (!products) throw new NotFoundException('Product not found');
     return products;
   }
 }

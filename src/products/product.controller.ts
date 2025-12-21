@@ -17,12 +17,6 @@ export class ProductsController {
     return this.productService.findAll();
   }
 
-  // ---------------- Get a product by ID ----------------
-  @Get(':id')
-  async getParticularProduct(@Param('id') id: string) {
-    return this.productService.findById(id);
-  }
-
   // ---------------- Get all categories ----------------
   @Get('categories')
   async getAllCategories() {
@@ -45,5 +39,11 @@ export class ProductsController {
   @Get('products/filter')
   async getProductsByFilter(@Body() filters: FilterProductsDto) {
     return this.productService.findByFilter(filters);
+  }
+
+  // ---------------- Get a product by ID ----------------
+  @Get(':id')
+  async getParticularProduct(@Param('id') id: string) {
+    return this.productService.findById(id);
   }
 }

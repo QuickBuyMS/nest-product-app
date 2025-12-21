@@ -2,6 +2,10 @@ import { IsOptional, IsArray, IsNumber, IsString, Min } from 'class-validator';
 
 export class FilterProductsDto {
   @IsOptional()
+  @IsString()
+  name?: string | undefined;
+
+  @IsOptional()
   @IsNumber()
   categoryId?: number;
 
@@ -16,10 +20,6 @@ export class FilterProductsDto {
   @IsOptional()
   @IsNumber()
   maxPrice?: number;
-
-  @IsOptional()
-  @IsString()
-  name?: string;
 
   @IsOptional()
   @IsNumber()
