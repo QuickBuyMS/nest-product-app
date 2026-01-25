@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { FilterProductsDto } from './product.dto';
 import { ClientProxy } from '@nestjs/microservices';
@@ -36,7 +36,7 @@ export class ProductsController {
   }
 
   // ---------------- Get products by filter ----------------
-  @Get('products/filter')
+  @Post('products/filter')
   async getProductsByFilter(@Body() filters: FilterProductsDto) {
     return this.productService.findByFilter(filters);
   }

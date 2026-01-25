@@ -1,9 +1,9 @@
 import {
   Injectable,
-  ConflictException,
   NotFoundException,
+  InternalServerErrorException,
+  HttpException,
 } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
 import { ProductRepository } from './product.repository';
 import { FilterProductsDto } from './product.dto';
 
@@ -12,56 +12,126 @@ export class ProductsService {
   constructor(private productRepo: ProductRepository) {}
 
   async findAll() {
-    const products = await this.productRepo.getAllProducts();
-    if (!products) throw new NotFoundException('Products not found');
-    return products;
+    try {
+      const products = await this.productRepo.getAllProducts();
+      if (!products) throw new NotFoundException('Products not found');
+
+      return {
+        statusCode: 200,
+        message: 'Products fetched successfully',
+        data: products,
+      };
+    } catch (error) {
+      this.handleError(error);
+    }
   }
 
   async findById(id: string) {
-    const product = await this.productRepo.getById(id);
-    if (!product) throw new NotFoundException('Product not found');
-    return product;
+    try {
+      const product = await this.productRepo.getById(id);
+      if (!product) throw new NotFoundException('Product not found');
+
+      return {
+        statusCode: 200,
+        message: 'Product fetched successfully',
+        data: product,
+      };
+    } catch (error) {
+      this.handleError(error);
+    }
   }
 
   async findAllCategories() {
-    const categories = await this.productRepo.getAllCategories();
-    if (!categories) throw new NotFoundException('Categories not found');
-    return categories;
+    try {
+      const categories = await this.productRepo.getAllCategories();
+      if (!categories) throw new NotFoundException('Categories not found');
+
+      return {
+        statusCode: 200,
+        message: 'Categories fetched successfully',
+        data: categories,
+      };
+    } catch (error) {
+      this.handleError(error);
+    }
   }
 
   async findAllSubCategories() {
-    const subcategories = await this.productRepo.getAllSubCategories();
-    if (!subcategories) throw new NotFoundException('Sub-Categories not found');
-    return subcategories;
+    try {
+      const subcategories = await this.productRepo.getAllSubCategories();
+      if (!subcategories)
+        throw new NotFoundException('Sub-Categories not found');
+
+      return {
+        statusCode: 200,
+        message: 'Sub-categories fetched successfully',
+        data: subcategories,
+      };
+    } catch (error) {
+      this.handleError(error);
+    }
   }
 
   async findParticularSubCategories(category_id: string) {
-    const subcategories =
-      await this.productRepo.getParticularSubCategory(category_id);
-    if (!subcategories) throw new NotFoundException('Sub-Categories not found');
-    return subcategories;
+    try {
+      const subcategories =
+        await this.productRepo.getParticularSubCategory(category_id);
+
+      if (!subcategories)
+        throw new NotFoundException('Sub-Categories not found');
+
+      return {
+        statusCode: 200,
+        message: 'Sub-categories fetched successfully',
+        data: subcategories,
+      };
+    } catch (error) {
+      this.handleError(error);
+    }
   }
 
   async findByFilter(filters: FilterProductsDto) {
-    const {
-      name,
-      categoryId,
-      subcategoryId,
-      minPrice,
-      maxPrice,
-      limit,
-      offset,
-    } = filters;
-    const products = await this.productRepo.getByFilter(
-      name,
-      categoryId,
-      subcategoryId,
-      minPrice,
-      maxPrice,
-      limit,
-      offset,
-    );
-    // if (!products) throw new NotFoundException('Product not found');
-    return products;
+    try {
+      const {
+        name,
+        categoryId,
+        subcategoryId,
+        minPrice,
+        maxPrice,
+        limit,
+        offset,
+      } = filters;
+
+      const products = await this.productRepo.getByFilter(
+        name,
+        categoryId,
+        subcategoryId,
+        minPrice,
+        maxPrice,
+        limit,
+        offset,
+      );
+
+      return {
+        statusCode: 200,
+        message: 'Filtered products fetched successfully',
+        data: products,
+      };
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  /**
+   * Centralized error handler
+   */
+  private handleError(error: any): never {
+    if (error instanceof HttpException) {
+      throw error;
+    }
+    throw new InternalServerErrorException({
+      statusCode: 500,
+      message: 'Something went wrong',
+    });
   }
 }
