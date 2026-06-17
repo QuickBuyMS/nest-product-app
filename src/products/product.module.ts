@@ -21,6 +21,6 @@ import { TokenMiddleware } from '../middleware/verifyToken';
 })
 export class ProductsModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(TokenMiddleware).forRoutes(ProductsController); // applies to all routes in product controller
+    // consumer.apply(TokenMiddleware).forRoutes(ProductsController); // applies to all routes in product controller
   }
 }

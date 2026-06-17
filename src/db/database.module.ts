@@ -16,7 +16,7 @@ dotenv.config();
           database: process.env.DB_NAME || 'QuickBuy',
           password: process.env.DB_PASSWORD || '',
           port: Number(process.env.DB_PORT) || 3306,
-          socketPath: process.env.DB_SOCKET_PATH || '/opt/lampp/var/mysql/mysql.sock',
+          socketPath: process.env.DB_SOCKET_PATH || undefined,
           waitForConnections: true,
           connectionLimit: 10,
         });

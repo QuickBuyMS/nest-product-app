@@ -3,7 +3,9 @@ import { ProductsService } from './products.service';
 import { FilterProductsDto } from './product.dto';
 import { ClientProxy } from '@nestjs/microservices';
 import { Inject, Headers } from '@nestjs/common';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
+@UseGuards(ThrottlerGuard)
 @Controller('catalogue')
 export class ProductsController {
   constructor(

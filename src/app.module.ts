@@ -3,9 +3,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ProductsModule } from './products/product.module';
 import { DatabaseModule } from './db/database.module';
+import { ThrottleConfig } from './throttle/throttle.config';
 
 @Module({
-  imports: [ProductsModule,DatabaseModule],
+  imports: [ProductsModule, DatabaseModule, ThrottleConfig],
   controllers: [AppController],
   providers: [AppService],
 })
