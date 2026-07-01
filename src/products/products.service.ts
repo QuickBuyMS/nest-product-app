@@ -6,10 +6,11 @@ import {
 } from '@nestjs/common';
 import { ProductRepository } from './product.repository';
 import { FilterProductsDto } from './product.dto';
+import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class ProductsService {
-  constructor(private productRepo: ProductRepository) {}
+  constructor(private productRepo: ProductRepository, private redisService: RedisService) { }
 
   async findAll() {
     try {
@@ -102,7 +103,25 @@ export class ProductsService {
         offset,
       } = filters;
 
-      const products = await this.productRepo.getByFilter(
+      let products: any = [];
+
+      //redis product cache against a particualr product name with 30s TTL
+
+      let cacheKey = "";
+      if (name) {
+        cacheKey = `products:name:${name}`;
+
+        // Check if the filtered data is cached
+        const cachedProducts = await this.redisService.get(cacheKey);
+        if (cachedProducts) {
+          console.log("Returning cached products data", cachedProducts);
+          products = JSON.parse(cachedProducts);  // Return cached result
+        }
+      }
+
+
+
+      products = await this.productRepo.getByFilter(
         name,
         categoryId,
         subcategoryId,
@@ -111,6 +130,14 @@ export class ProductsService {
         limit,
         offset,
       );
+
+      if (products.length > 0 && cacheKey) {
+        // Cache for 30 seconds
+        await this.redisService.set(cacheKey, JSON.stringify(products), 30);
+        console.log("Caching products by filter", products.length, cacheKey);
+      }
+
+
 
       return {
         statusCode: 200,

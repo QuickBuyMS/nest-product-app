@@ -5,6 +5,8 @@ import { ProductRepository } from './product.repository';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TokenMiddleware } from '../middleware/verifyToken';
 
+import { RedisModule } from '../redis/redis.module';
+
 @Module({
   imports: [
     ClientsModule.register([
@@ -14,6 +16,7 @@ import { TokenMiddleware } from '../middleware/verifyToken';
         options: { port: 5001 },
       },
     ]),
+    RedisModule,
   ],
   controllers: [ProductsController],
   providers: [ProductsService, ProductRepository],
