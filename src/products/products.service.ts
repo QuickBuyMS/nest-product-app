@@ -111,15 +111,22 @@ export class ProductsService {
       if (name) {
         cacheKey = `products:name:${name}`;
 
-        // Check if the filtered data is cached
-        const cachedProducts = await this.redisService.get(cacheKey);
-        if (cachedProducts) {
-          console.log("Returning cached products data", cachedProducts);
-          products = JSON.parse(cachedProducts);  // Return cached result
+        try {
+          // Check if the filtered data is cached
+          const cachedProducts = await this.redisService.get(cacheKey);
+          if (cachedProducts) {
+            console.log("Returning cached products data", cachedProducts);
+            products = JSON.parse(cachedProducts);  // Return cached result
+            return {
+              statusCode: 200,
+              message: 'Filtered products fetched successfully from cache',
+              data: products,
+            };
+          }
+        } catch (redisError) {
+          console.warn(`Redis cache GET failed for key ${cacheKey}. Falling back to DB.`, redisError.message);
         }
       }
-
-
 
       products = await this.productRepo.getByFilter(
         name,
@@ -132,9 +139,13 @@ export class ProductsService {
       );
 
       if (products.length > 0 && cacheKey) {
-        // Cache for 30 seconds
-        await this.redisService.set(cacheKey, JSON.stringify(products), 30);
-        console.log("Caching products by filter", products.length, cacheKey);
+        try {
+          // Cache for 30 seconds
+          await this.redisService.set(cacheKey, JSON.stringify(products), 30);
+          console.log("Caching products by filter", products.length, cacheKey);
+        } catch (redisError) {
+          console.warn(`Redis cache SET failed for key ${cacheKey}.`, redisError.message);
+        }
       }
 
 
@@ -153,6 +164,7 @@ export class ProductsService {
    * Centralized error handler
    */
   private handleError(error: any): never {
+    console.error('API Error:', error);
     if (error instanceof HttpException) {
       throw error;
     }
