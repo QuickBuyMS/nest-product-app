@@ -12,9 +12,23 @@ import {
 } from '@nestjs/common';
 import { RagService } from './rag.service';
 
+import { IsString, IsOptional, IsNumber, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+
 export class RagQueryDto {
+  @IsString()
   query: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Type(() => Number)
   topK?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Type(() => Number)
   maxPrice?: number;
 }
 

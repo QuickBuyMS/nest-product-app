@@ -37,7 +37,20 @@ export class ProductRepository {
   }
 
   async getAllProducts() {
-    const [rows] = await this.db.query('SELECT * FROM products');
+    const [rows] = await this.db.query(`
+      SELECT
+        p.product_id,
+        p.name,
+        p.description,
+        p.price,
+        p.stock,
+        p.image_url,
+        c.name  AS category_name,
+        sc.name AS subcategory_name
+      FROM products p
+      LEFT JOIN subcategories sc ON p.subcategory_id = sc.subcategory_id
+      LEFT JOIN categories    c  ON sc.category_id   = c.category_id
+    `);
     return rows as any as ProductRow | undefined;
   }
 
