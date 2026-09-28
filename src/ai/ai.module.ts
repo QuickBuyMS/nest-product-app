@@ -14,6 +14,10 @@ import { RagController } from './rag/rag.controller';
 import { MemoryService } from './memory/memory.service';
 import { MemoryController } from './memory/memory.controller';
 
+// Phase 5 — Comparison
+import { ComparisonService } from './comparison/comparison.service';
+import { ComparisonController } from './comparison/comparison.controller';
+
 /**
  * AiModule — central module for all AI/RAG/Agent features
  *
@@ -45,16 +49,19 @@ import { MemoryController } from './memory/memory.controller';
     EmbeddingsController, // POST /ai/embeddings/index-all, GET /ai/embeddings/status
     RagController,        // GET /ai/search, POST /ai/rag
     MemoryController,     // GET/POST/DELETE /ai/memory/:userId
+    ComparisonController, // GET /ai/compare/:productId
   ],
   providers: [
     EmbeddingsService,  // Phase 1: Vector generation + Redis indexing
     RagService,         // Phase 2: Semantic search + RAG answer generation
     MemoryService,      // Phase 4: Long-term user preference storage
+    ComparisonService,  // Phase 5: AI product comparison
   ],
   exports: [
     EmbeddingsService, // Exported so other modules can call generateEmbedding()
     RagService,        // Exported for potential use by other services
     MemoryService,     // Exported for preference injection
+    ComparisonService, // Exported for comparison use
   ],
 })
 export class AiModule {}
