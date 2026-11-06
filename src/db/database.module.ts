@@ -17,6 +17,7 @@ dotenv.config();
           password: process.env.DB_PASSWORD || '',
           port: Number(process.env.DB_PORT) || 3306,
           socketPath: process.env.DB_SOCKET_PATH || undefined,
+          ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
           waitForConnections: true,
           connectionLimit: 10,
         });

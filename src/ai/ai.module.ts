@@ -18,6 +18,11 @@ import { MemoryController } from './memory/memory.controller';
 import { ComparisonService } from './comparison/comparison.service';
 import { ComparisonController } from './comparison/comparison.controller';
 
+// Phase 6 — AI Review Summarizer
+import { ReviewsService } from './reviews/reviews.service';
+import { ReviewsController } from './reviews/reviews.controller';
+import { ReviewRepository } from './reviews/review.repository';
+
 /**
  * AiModule — central module for all AI/RAG/Agent features
  *
@@ -50,18 +55,22 @@ import { ComparisonController } from './comparison/comparison.controller';
     RagController,        // GET /ai/search, POST /ai/rag
     MemoryController,     // GET/POST/DELETE /ai/memory/:userId
     ComparisonController, // GET /ai/compare/:productId
+    ReviewsController,    // GET /ai/reviews/:productId/summary, POST /ai/reviews/:productId
   ],
   providers: [
     EmbeddingsService,  // Phase 1: Vector generation + Redis indexing
     RagService,         // Phase 2: Semantic search + RAG answer generation
     MemoryService,      // Phase 4: Long-term user preference storage
     ComparisonService,  // Phase 5: AI product comparison
+    ReviewsService,     // Phase 6: AI review summarizer (generateObject + Zod)
+    ReviewRepository,   // Phase 6: Raw DB access for reviews table
   ],
   exports: [
     EmbeddingsService, // Exported so other modules can call generateEmbedding()
     RagService,        // Exported for potential use by other services
     MemoryService,     // Exported for preference injection
     ComparisonService, // Exported for comparison use
+    ReviewsService,    // Exported so ProductsModule can call summarizeReviews()
   ],
 })
 export class AiModule {}

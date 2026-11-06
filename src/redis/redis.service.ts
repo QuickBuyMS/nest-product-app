@@ -10,6 +10,9 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         this.client = new Redis({
             host: env.REDIS_HOST || 'localhost',
             port: parseInt(env.REDIS_PORT || '6379', 10),
+            enableOfflineQueue: false,
+            maxRetriesPerRequest: 1,
+            retryStrategy: () => null,
             // ── IMPORTANT: Redis Stack is required for vector search ──────────────
             // Start Redis Stack locally:
             //   docker run -d -p 6379:6379 redis/redis-stack:latest
@@ -20,6 +23,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
             // ║  → Production: ~$15/mo for 250MB with persistence + replication    ║
             // ╚════════════════════════════════════════════════════════════════════╝
         });
+        this.client.on('error', () => {});
     }
 
     onModuleDestroy() {
