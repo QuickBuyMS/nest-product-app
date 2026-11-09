@@ -15,16 +15,16 @@
 
 require('dotenv').config();
 const mysql = require('mysql2/promise');
-const fs    = require('fs');
-const path  = require('path');
+const fs = require('fs');
+const path = require('path');
 
 async function main() {
-  const host     = process.env.DB_HOST || 'localhost';
-  const port     = Number(process.env.DB_PORT) || 3306;
-  const user     = process.env.DB_USER || 'root';
+  const host = process.env.DB_HOST || 'localhost';
+  const port = Number(process.env.DB_PORT) || 3306;
+  const user = process.env.DB_USER || 'root';
   const password = process.env.DB_PASSWORD || '';
   const database = process.env.DB_NAME || 'QuickBuy';
-  const useSSL   = process.env.DB_SSL === 'true';
+  const useSSL = process.env.DB_SSL === 'true';
 
   console.log('🔄 Connecting to MySQL server...');
   console.log(`   Host: ${host}:${port}`);
@@ -105,17 +105,17 @@ async function main() {
     const id3 = ids[2] ?? ids[0];
 
     const sampleReviews = [
-      [id1, 'user_001', 5, 'Absolutely love it!',    'This product exceeded all my expectations. Build quality is superb and delivery was quick. Would definitely buy again.'],
-      [id1, 'user_002', 4, 'Great value for money',  'Very happy with the purchase. Works exactly as described. Minor packaging issue but product itself is perfect.'],
+      [id1, 'user_001', 5, 'Absolutely love it!', 'This product exceeded all my expectations. Build quality is superb and delivery was quick. Would definitely buy again.'],
+      [id1, 'user_002', 4, 'Great value for money', 'Very happy with the purchase. Works exactly as described. Minor packaging issue but product itself is perfect.'],
       [id1, 'user_003', 3, 'Decent but not perfect', 'It does the job but I expected a bit more premium feel. The price is fair though.'],
-      [id1, 'user_004', 5, 'Best I have used',       'Hands down the best product in this category. Fast shipping, great packaging, and excellent performance.'],
-      [id1, 'user_005', 2, 'Disappointed',           'Not what I expected from the photos. Quality seems lower than advertised. Customer service was helpful though.'],
-      [id2, 'user_001', 5, 'Premium quality',        'Outstanding build quality. Looks and feels expensive. Very satisfied with the purchase.'],
-      [id2, 'user_006', 4, 'Good product',           'Works well and matches the description. Shipping was a bit slow but the product is solid.'],
-      [id2, 'user_007', 1, 'Broke after a week',     'Very disappointed. Stopped working after just 7 days of normal use. Poor quality control.'],
-      [id3, 'user_002', 5, 'Highly recommended',     'Fantastic product! All my friends are asking where I got it. Excellent value.'],
-      [id3, 'user_008', 4, 'Mostly satisfied',       'Good product overall. A few minor issues but nothing major. Would buy again.'],
-      [id3, 'user_009', 3, 'Average experience',     'The product is okay. Not bad but nothing special either. Expected more features at this price point.'],
+      [id1, 'user_004', 5, 'Best I have used', 'Hands down the best product in this category. Fast shipping, great packaging, and excellent performance.'],
+      [id1, 'user_005', 2, 'Disappointed', 'Not what I expected from the photos. Quality seems lower than advertised. Customer service was helpful though.'],
+      [id2, 'user_001', 5, 'Premium quality', 'Outstanding build quality. Looks and feels expensive. Very satisfied with the purchase.'],
+      [id2, 'user_006', 4, 'Good product', 'Works well and matches the description. Shipping was a bit slow but the product is solid.'],
+      [id2, 'user_007', 1, 'Broke after a week', 'Very disappointed. Stopped working after just 7 days of normal use. Poor quality control.'],
+      [id3, 'user_002', 5, 'Highly recommended', 'Fantastic product! All my friends are asking where I got it. Excellent value.'],
+      [id3, 'user_008', 4, 'Mostly satisfied', 'Good product overall. A few minor issues but nothing major. Would buy again.'],
+      [id3, 'user_009', 3, 'Average experience', 'The product is okay. Not bad but nothing special either. Expected more features at this price point.'],
     ];
 
     let inserted = 0;
@@ -153,3 +153,4 @@ main().catch(err => {
   console.error('\n❌ Migration failed:', err);
   process.exit(1);
 });
+

@@ -7,21 +7,18 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     private client: Redis;
 
     onModuleInit() {
+        const isUpstash = (env.REDIS_HOST || '').includes('upstash.io');
+        const useTls = env.REDIS_TLS === 'true' || isUpstash;
+
         this.client = new Redis({
             host: env.REDIS_HOST || 'localhost',
             port: parseInt(env.REDIS_PORT || '6379', 10),
+            password: env.REDIS_PASSWORD || undefined,
+            username: env.REDIS_USERNAME || undefined,
+            tls: useTls ? {} : undefined,
             enableOfflineQueue: false,
             maxRetriesPerRequest: 1,
             retryStrategy: () => null,
-            // ── IMPORTANT: Redis Stack is required for vector search ──────────────
-            // Start Redis Stack locally:
-            //   docker run -d -p 6379:6379 redis/redis-stack:latest
-            //
-            // ╔══════════════════ GOLD STANDARD ALTERNATIVE ═══════════════════════╗
-            // ║  Managed Redis: Redis Cloud (https://redis.io/cloud)               ║
-            // ║  → Free 30MB tier, auto-scales, built-in Redis Stack modules       ║
-            // ║  → Production: ~$15/mo for 250MB with persistence + replication    ║
-            // ╚════════════════════════════════════════════════════════════════════╝
         });
         this.client.on('error', () => {});
     }
