@@ -1,11 +1,9 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { FilterProductsDto } from './product.dto';
 import { ClientProxy } from '@nestjs/microservices';
-import { Inject, Headers } from '@nestjs/common';
-import { ThrottlerGuard } from '@nestjs/throttler';
+import { Inject } from '@nestjs/common';
 
-@UseGuards(ThrottlerGuard)
 @Controller('catalogue')
 export class ProductsController {
   constructor(
