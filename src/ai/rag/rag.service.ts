@@ -3,6 +3,7 @@ import { generateText } from 'ai';
 import { google } from '@ai-sdk/google';
 import { EmbeddingsService, VECTOR_SET_KEY } from '../embeddings/embeddings.service';
 import { RedisService } from '../../redis/redis.service';
+import { ProductRepository } from '../../products/product.repository';
 
 async function retryOnOverload<T>(fn: () => Promise<T>, maxAttempts = 3): Promise<T> {
   const delays = [5000, 10000];
@@ -73,6 +74,7 @@ export class RagService {
   constructor(
     private readonly embeddingsService: EmbeddingsService,
     private readonly redisService: RedisService,
+    private readonly productRepo: ProductRepository,
   ) {}
 
   async semanticSearch(
@@ -80,12 +82,14 @@ export class RagService {
     topK: number = 5,
     maxPrice?: number,
   ): Promise<SemanticSearchResult[]> {
-    const queryEmbedding = await this.embeddingsService.generateEmbedding(query);
-    const queryBuffer = this.embeddingsService.float32ArrayToBuffer(queryEmbedding);
+    let candidatePool: SemanticSearchResult[] = [];
 
-    const fetchCount = Math.max(topK * 3, 15);
-
+    // 1. Attempt native Redis vector search (if vector module enabled)
     try {
+      const queryEmbedding = await this.embeddingsService.generateEmbedding(query);
+      const queryBuffer = this.embeddingsService.float32ArrayToBuffer(queryEmbedding);
+      const fetchCount = Math.max(topK * 3, 15);
+
       const rawResults = await this.redisService.callCommand(
         'VSIM', VECTOR_SET_KEY,
         'FP32', queryBuffer,
@@ -95,13 +99,31 @@ export class RagService {
       ) as any[];
 
       const parsed = this.parseVsimResults(rawResults);
-
-      let candidatePool = maxPrice
+      candidatePool = maxPrice
         ? parsed.filter(p => parseFloat(p.price) <= maxPrice)
         : parsed;
+    } catch (err: any) {
+      this.logger.warn(`Vector search unavailable or failed (${err?.message}). Falling back to database semantic search.`);
+      const rawProducts = (await this.productRepo.getAllProducts()) as unknown as any[];
+      candidatePool = (rawProducts || []).map((p: any) => ({
+        product_id: String(p.product_id),
+        name: p.name,
+        price: String(p.price),
+        category_name: p.category_name || '',
+        subcategory_name: p.subcategory_name || '',
+        description: p.description || '',
+        image_url: p.image_url || '',
+        similarity_score: 0.5,
+      }));
 
-      if (candidatePool.length === 0) return [];
+      if (maxPrice) {
+        candidatePool = candidatePool.filter(p => parseFloat(p.price) <= maxPrice);
+      }
+    }
 
+    if (candidatePool.length === 0) return [];
+
+    try {
       const stopWords = new Set(['a', 'an', 'the', 'for', 'in', 'on', 'with', 'and', 'or', 'of', 'is', 'to', 'me', 'find', 'show', 'get', 'buy', 'want', 'search', 'top', 'best', 'under', 'price', 'product', 'products', 'item', 'items']);
       const rawTerms = query.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(t => t.length > 1 && !stopWords.has(t));
 
@@ -128,35 +150,34 @@ export class RagService {
           }
         });
 
-        const boostedScore = p.similarity_score + (matchCount * 0.08);
+        const boostedScore = (p.similarity_score || 0.5) + (matchCount * 0.15);
 
         return {
           product: p,
           boostedScore,
           matchCount,
-          rawScore: p.similarity_score,
+          rawScore: p.similarity_score || 0.5,
         };
       });
 
       scored.sort((a, b) => b.boostedScore - a.boostedScore);
 
-      const topMatch = scored[0];
       const maxMatchCount = Math.max(...scored.map(s => s.matchCount));
       const hasTermMatches = maxMatchCount > 0;
 
-      const filtered = scored.filter(s => {
-        if (hasTermMatches) {
-          // Require at least maxMatchCount - 1 matches to exclude weak tangential mentions
-          const minRequired = Math.max(1, maxMatchCount - 1);
-          return s.matchCount >= minRequired;
-        }
-        return (topMatch.rawScore - s.rawScore) <= 0.015;
-      });
+      let filtered = scored;
+      if (hasTermMatches) {
+        filtered = scored.filter(s => s.matchCount > 0);
+      }
+
+      if (filtered.length === 0) {
+        filtered = scored;
+      }
 
       return filtered.slice(0, topK).map(s => s.product);
     } catch (err: any) {
-      this.logger.error('Semantic search failed:', err?.message);
-      return [];
+      this.logger.error('Semantic search scoring failed:', err?.message);
+      return candidatePool.slice(0, topK);
     }
   }
 
@@ -207,7 +228,7 @@ Please answer the user's question based only on the products above.`,
       return {
         answer,
         sources,
-        model: 'gemini-3.8-flash',
+        model: 'gemini-3.6-flash',
       };
     } catch (err: any) {
       const isTransient =
@@ -221,7 +242,7 @@ Please answer the user's question based only on the products above.`,
         return {
           answer: 'The AI assistant is temporarily unavailable due to high demand. Your search results are below — please try again in a moment.',
           sources,
-          model: 'gemini-3.8-flash',
+          model: 'gemini-3.6-flash',
         };
       }
       throw err;
