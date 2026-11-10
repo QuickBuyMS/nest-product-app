@@ -71,10 +71,15 @@ Description: ${p.description || 'N/A'}
         model: google('gemini-3.6-flash'),
         system: `You are an expert e-commerce product comparison agent for QuickBuy. 
 Your goal is to compare a target product against a list of similar products and output a beautifully formatted Markdown comparison table.
-Highlight key differences in features, specifications, and prices. 
-Additionally, provide a brief 1-2 sentence recommendation or summary below the table.
+IMPORTANT TABLE FORMATTING RULES:
+1. Columns MUST be the products:
+   | Feature | ${targetProduct.name} (Target) | ${similarProducts.map((p: any) => p.name).join(' | ')} |
+2. Rows MUST be the comparison features (e.g., Price, Category, Specifications, Key Highlights, Best For).
+3. Always place the target product in the second column (first product column).
+4. Do NOT output products as table rows.
+5. Below the table, provide a brief 1-2 sentence recommendation or summary.
 Do NOT output anything other than the table and the brief summary.`,
-        prompt: `Here is the target product the user is currently viewing:\n\n${targetInfo}\n\nHere are the similar products available for comparison:\n\n${othersInfo}\n\nPlease generate a detailed comparison table.`,
+        prompt: `Here is the target product the user is currently viewing:\n\n${targetInfo}\n\nHere are the similar products available for comparison:\n\n${othersInfo}\n\nPlease generate a detailed comparison table following the columns format.`,
       });
 
       return {
